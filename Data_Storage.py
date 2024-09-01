@@ -1,47 +1,28 @@
-import pymongo
 import json
+from pymongo import MongoClient
 
 # Connect to MongoDB
-try:
-    client = pymongo.MongoClient("mongodb://localhost:27017/")
-    db = client["almayadeen"]
-    collection = db["articles"]
-    print("MongoDB connected successfully!")
-except Exception as e:
-    print(f"Error connecting to MongoDB: {e}")
-    exit()
+client = MongoClient('mongodb://localhost:27017/')
+db = client['AlMayadeen']
+collection = db['articles']
 
-# List of JSON file names
-files = [
-    'output/articles_2024_8.xml.json',
-    'output/articles_2024_7.xml.json',
-    'output/articles_2024_6.xml.json',
-    'output/articles_2024_5.xml.json',
-    'output/articles_2024_4.xml.json',
-    'output/articles_2024_3.xml.json',
-    # Add more file paths as needed
+# List of JSON files
+json_files = [
+    'output/articles_2024_03.json',
+    'output/articles_2024_04.json',
+    'output/articles_2024_05.json',
+    'output/articles_2024_06.json',
+    'output/articles_2024_07.json',
+    'output/articles_2024_08.json',
+    # Add more files if needed
 ]
 
-# Load and insert JSON data
-try:
-    for file_path in files:
-        print(f"Processing file: {file_path}")
+# Load each JSON file and insert into MongoDB
+for file in json_files:
+    with open(file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        collection.insert_many(data)
 
-        with open(file_path, encoding='utf-8') as f:
-            data = json.load(f)
+print("All data inserted successfully.")
 
-            # Ensure data is a list of dictionaries
-            if isinstance(data, list) and all(isinstance(item, dict) for item in data):
-                collection.insert_many(data)
-                print(f"Data from {file_path} inserted successfully!")
-            else:
-                print(f"The JSON data in {file_path} is not in the expected format. It should be a list of dictionaries.")
-except FileNotFoundError:
-    print("One or more files were not found. Please check the file paths and names.")
-except json.JSONDecodeError:
-    print("Error decoding JSON. Please ensure all files contain valid JSON.")
-except UnicodeDecodeError:
-    print("Error decoding one or more files. Please check the files' encodings.")
-except Exception as e:
-    print(f"An error occurred: {e}")
 
